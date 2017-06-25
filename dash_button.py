@@ -21,22 +21,27 @@ struct arphdr {
     u_char   tpa[4];   /* Target IP address       */
 };
 """
-
+from __future__ import print_function
+import sys
+import os
 import socket
 import struct
 import binascii
-import os
 
 # Replace this MAC addresses and nickname with your own
 macs = {
     '0c47c9bec55d' : 'button1'
 }
 
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
 
 def button_pressed(button_name):
-    print 'triggering button event for ' + button_name
-    os.system ('curl -s --header "Content-Type: text/plain" --request POST --data ON http://localhost:8080/rest/items/DASH_'+button_name)
+    eprint("triggering button event for " + button_name)
+    os.system('curl -s --header "Content-Type: text/plain" --request POST --data ON http://localhost:8080/rest/items/DASH_'+button_name)
 
+
+# ------------ main -----------------
 
 rawSocket = socket.socket(socket.AF_PACKET,
                           socket.SOCK_RAW,
@@ -59,24 +64,24 @@ while True:
     source_mac = binascii.hexlify(arp_detailed[5])
     source_ip = socket.inet_ntoa(arp_detailed[6])
     dest_ip = socket.inet_ntoa(arp_detailed[8])
-#		print "---------------- ETHERNET_FRAME ----------------"
-#		print "Dest MAC:        ", binascii.hexlify(eth[0])
-#		print "Source MAC:      ", binascii.hexlify(eth[1])
-#		print "Type:            ", binascii.hexlify(ethtype)
-    print "\n----------------- ARP Packet -------------------"
-#    print "Hardware type:   ", binascii.hexlify(arp[0])
-#    print "Protocol type:   ", binascii.hexlify(arp[1])
-#    print "Hardware size:   ", binascii.hexlify(arp[2])
-#    print "Protocol size:   ", binascii.hexlify(arp[3])
-    print "Source MAC/IP:   ", binascii.hexlify(arp[5]), socket.inet_ntoa(arp[6])
-    print "Dest MAC/IP:     ", binascii.hexlify(arp[7]), socket.inet_ntoa(arp[8])
-    print "Opcode:          ", binascii.hexlify(arp[4])
-#    print "------------------------------------------------\n"
+#     print("---------------- ETHERNET_FRAME ----------------")
+#     print("Dest MAC:        ", binascii.hexlify(eth[0]))
+#     print("Source MAC:      ", binascii.hexlify(eth[1]))
+#     print("Type:            ", binascii.hexlify(ethtype))
+    print("\n----------------- ARP Packet -------------------")
+#    print("Hardware type:   ", binascii.hexlify(arp[0]))
+#    print("Protocol type:   ", binascii.hexlify(arp[1]))
+#    print("Hardware size:   ", binascii.hexlify(arp[2]))
+#    print("Protocol size:   ", binascii.hexlify(arp[3]))
+    print("Source MAC/IP:   ", binascii.hexlify(arp[5]), socket.inet_ntoa(arp[6]))
+    print("Dest MAC/IP:     ", binascii.hexlify(arp[7]), socket.inet_ntoa(arp[8]))
+    print("Opcode:          ", binascii.hexlify(arp[4]))
+#    print("------------------------------------------------\n")
 
     if source_mac in macs:
-        print "ARP from " + macs[source_mac] + " with IP " + source_ip
+        eprint("ARP from " + macs[source_mac] + " with IP " + source_ip)
         if macs[source_mac] == 'button1':
-            print macs[source_mac] + "/" + source_mac + ": Button pressed from IP " + source_ip      
+            eprint(macs[source_mac] + "/" + source_mac + ": Button pressed from IP " + source_ip)   
             button_pressed(macs[source_mac])
 #    else:
-#        print "Unknown MAC " + source_mac + " from IP " + source_ip   
+#           print("Unknown MAC " + source_mac + " from IP " + source_ip) 
